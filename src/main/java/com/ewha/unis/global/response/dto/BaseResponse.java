@@ -35,4 +35,12 @@ public class BaseResponse<T> {
     public static <T> BaseResponse<T> ok() {
         return of(SuccessCode.OK, null);
     }
+
+    public static <T> BaseResponse<T> created() {
+        return of(SuccessCode.CREATED);
+    }
+
+    public static <T> BaseResponse<T> noContent() {
+        return of(SuccessCode.NO_CONTENT);
+    }
 }
