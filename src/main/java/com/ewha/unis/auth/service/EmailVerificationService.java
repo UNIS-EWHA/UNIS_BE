@@ -50,13 +50,17 @@ public class EmailVerificationService {
         return EmailVerifyResponse.of(token);
     }
 
-    public String consumeToken(String token) {
-        String email = redisTemplate.opsForValue().get(TOKEN_PREFIX + token);
-        if (email == null) {
+    public void verifyAndConsumeToken(String email, String token) {
+        String key = TOKEN_PREFIX + token;
+
+        String storedEmail = redisTemplate.opsForValue().getAndDelete(key);
+
+        if (storedEmail == null) {
             throw new CustomException(ErrorCode.EMAIL_TOKEN_INVALID);
         }
-        redisTemplate.delete(TOKEN_PREFIX + token);
-        return email;
+        if (!storedEmail.equals(email)) {
+            throw new CustomException(ErrorCode.EMAIL_TOKEN_INVALID);
+        }
     }
 
     private String generateCode() {
