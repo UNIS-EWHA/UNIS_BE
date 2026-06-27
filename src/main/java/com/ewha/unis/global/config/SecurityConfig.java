@@ -31,7 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                         "/health-check",
                         "/api/v1/auth/**",
-                        "/swagger-ui/**"
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
                 ).permitAll().anyRequest().authenticated());
 
         return http.build();
