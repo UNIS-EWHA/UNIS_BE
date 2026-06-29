@@ -8,7 +8,6 @@ public record EmailVerifyRequest(
         @NotBlank
         @Email
         String email,
-
         @NotBlank
         String code
 ) { }
