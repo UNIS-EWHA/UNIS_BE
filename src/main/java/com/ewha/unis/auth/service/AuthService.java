@@ -95,4 +95,16 @@ public class AuthService {
         authRedisService.saveRefreshToken(member.getId(), newRefresh, validity);
         return new LoginResult(newAccess, newRefresh, validity, member.getRole());
     }
+
+    public void logout(String bearer, String refreshToken) {
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            String access = bearer.substring(7);
+            if (jwtProvider.validateToken(access)) {
+                authRedisService.blacklistAccessToken(access, jwtProvider.getRemainingSeconds(access));
+            }
+        }
+        if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
+            authRedisService.deleteRefreshToken(jwtProvider.getMemberId(refreshToken));
+        }
+    }
 }

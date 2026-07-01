@@ -34,8 +34,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public BaseResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request,
-                                             HttpServletResponse response) {
+    public BaseResponse<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response) {
         LoginResult result = authService.login(request);
         response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.create(result.refreshToken(),
                 result.refreshTokenValidity()).toString());
@@ -50,5 +51,16 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE,
                 cookieUtil.create(result.refreshToken(), result.refreshTokenValidity()).toString());
         return BaseResponse.ok(new LoginResponse(result.accessToken(), result.role()));
+    }
+
+    @PostMapping("/logout")
+    public BaseResponse<Void> logout(
+            @RequestHeader(value = "Authorization", required = false) String bearer,
+            @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletResponse response) {
+        authService.logout(bearer, refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                cookieUtil.expire().toString());
+        return BaseResponse.ok();
     }
 }
