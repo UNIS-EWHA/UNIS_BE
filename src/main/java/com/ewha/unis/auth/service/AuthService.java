@@ -1,12 +1,22 @@
 package com.ewha.unis.auth.service;
 
 import com.ewha.unis.auth.dto.LoginIdCheckResponse;
+import com.ewha.unis.auth.dto.LoginRequest;
+import com.ewha.unis.auth.dto.LoginResult;
 import com.ewha.unis.auth.dto.SignUpRequest;
+import com.ewha.unis.auth.security.CustomUserDetails;
+import com.ewha.unis.auth.security.CustomUserPrincipal;
+import com.ewha.unis.global.config.jwt.JwtProperties;
+import com.ewha.unis.global.config.jwt.JwtProvider;
 import com.ewha.unis.global.exception.CustomException;
 import com.ewha.unis.global.response.code.ErrorCode;
 import com.ewha.unis.member.domain.Member;
+import com.ewha.unis.member.domain.Role;
 import com.ewha.unis.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +29,10 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
+    private final AuthRedisService authRedisService;
+    private final JwtProperties jwtProperties;
 
     @Transactional
     public void signUp(SignUpRequest request) {
@@ -48,5 +62,24 @@ public class AuthService {
     public LoginIdCheckResponse checkAvailableLoginId(String loginId) {
         boolean available = !memberRepository.existsByLoginId(loginId);
         return LoginIdCheckResponse.of(available);
+    }
+
+    public LoginResult login(LoginRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.loginId(), request.password()));
+
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long memberId = principal.getMemberId();
+        Role role = principal.getRole();
+
+        long refreshValidity = request.keepLogin()
+                ? jwtProperties.refreshTokenValidity()
+                : jwtProperties.refreshTokenValidityShort();
+
+        String accessToken = jwtProvider.createAccessToken(memberId, role);
+        String refreshToken = jwtProvider.createRefreshToken(memberId, refreshValidity);
+        authRedisService.saveRefreshToken(memberId, refreshToken, refreshValidity);
+
+        return new LoginResult(accessToken, refreshToken, refreshValidity, role);
     }
 }
