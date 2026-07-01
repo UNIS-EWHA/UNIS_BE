@@ -1,13 +1,14 @@
 package com.ewha.unis.auth.controller;
 
-import com.ewha.unis.auth.dto.LoginIdCheckResponse;
-import com.ewha.unis.auth.dto.SignUpRequest;
+import com.ewha.unis.auth.dto.*;
 import com.ewha.unis.auth.service.AuthService;
-import com.ewha.unis.global.response.code.SuccessCode;
 import com.ewha.unis.global.response.dto.BaseResponse;
+import com.ewha.unis.global.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public class AuthController {
     private final AuthService authService;
+    private final CookieUtil cookieUtil;
 
     @GetMapping("/login-id/check")
     public BaseResponse<LoginIdCheckResponse> checkAvailableLoginId(
@@ -29,5 +31,36 @@ public class AuthController {
             @Valid @RequestBody SignUpRequest request) {
         authService.signUp(request);
         return BaseResponse.created();
+    }
+
+    @PostMapping("/login")
+    public BaseResponse<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response) {
+        LoginResult result = authService.login(request);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookieUtil.create(result.refreshToken(),
+                result.refreshTokenValidity()).toString());
+        return BaseResponse.ok(new LoginResponse(result.accessToken(), result.role()));
+    }
+
+    @PostMapping("/reissue")
+    public BaseResponse<LoginResponse> reissue(
+            @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletResponse response) {
+        LoginResult result = authService.reissue(refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                cookieUtil.create(result.refreshToken(), result.refreshTokenValidity()).toString());
+        return BaseResponse.ok(new LoginResponse(result.accessToken(), result.role()));
+    }
+
+    @PostMapping("/logout")
+    public BaseResponse<Void> logout(
+            @RequestHeader(value = "Authorization", required = false) String bearer,
+            @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletResponse response) {
+        authService.logout(bearer, refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                cookieUtil.expire().toString());
+        return BaseResponse.ok();
     }
 }
