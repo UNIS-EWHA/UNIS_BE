@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (token != null && jwtProvider.validateToken(token)) {
+        if (token != null && jwtProvider.validateToken(token) && !authRedisService.isBlacklisted(token)) {
             Long memberId = jwtProvider.getMemberId(token);
             Role role = jwtProvider.getRole(token);
 
