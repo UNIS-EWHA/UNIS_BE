@@ -41,4 +41,14 @@ public class AuthController {
                 result.refreshTokenValidity()).toString());
         return BaseResponse.ok(new LoginResponse(result.accessToken(), result.role()));
     }
+
+    @PostMapping("/reissue")
+    public BaseResponse<LoginResponse> reissue(
+            @CookieValue(name = CookieUtil.REFRESH_TOKEN, required = false) String refreshToken,
+            HttpServletResponse response) {
+        LoginResult result = authService.reissue(refreshToken);
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                cookieUtil.create(result.refreshToken(), result.refreshTokenValidity()).toString());
+        return BaseResponse.ok(new LoginResponse(result.accessToken(), result.role()));
+    }
 }

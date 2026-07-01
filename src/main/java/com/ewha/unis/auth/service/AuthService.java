@@ -1,11 +1,7 @@
 package com.ewha.unis.auth.service;
 
-import com.ewha.unis.auth.dto.LoginIdCheckResponse;
-import com.ewha.unis.auth.dto.LoginRequest;
-import com.ewha.unis.auth.dto.LoginResult;
-import com.ewha.unis.auth.dto.SignUpRequest;
+import com.ewha.unis.auth.dto.*;
 import com.ewha.unis.auth.security.CustomUserDetails;
-import com.ewha.unis.auth.security.CustomUserPrincipal;
 import com.ewha.unis.global.config.jwt.JwtProperties;
 import com.ewha.unis.global.config.jwt.JwtProvider;
 import com.ewha.unis.global.exception.CustomException;
@@ -20,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -81,5 +76,23 @@ public class AuthService {
         authRedisService.saveRefreshToken(memberId, refreshToken, refreshValidity);
 
         return new LoginResult(accessToken, refreshToken, refreshValidity, role);
+    }
+
+    public LoginResult reissue(String refreshToken) {
+        if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        Long memberId = jwtProvider.getMemberId(refreshToken);
+        if (!authRedisService.isValidRefreshToken(memberId, refreshToken)) {
+            throw new CustomException(ErrorCode.REFRESH_TOKEN_INVALID);
+        }
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        long validity = jwtProperties.refreshTokenValidity();
+        String newAccess = jwtProvider.createAccessToken(member.getId(), member.getRole());
+        String newRefresh = jwtProvider.createRefreshToken(member.getId(), validity);
+        authRedisService.saveRefreshToken(member.getId(), newRefresh, validity);
+        return new LoginResult(newAccess, newRefresh, validity, member.getRole());
     }
 }
