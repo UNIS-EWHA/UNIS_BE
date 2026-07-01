@@ -26,6 +26,14 @@ public class AuthRedisService {
     public void deleteRefreshToken(Long memberId) {
         stringRedisTemplate.delete(REFRESH_PREFIX + memberId);
     }
+
+    public void blacklistAccessToken(String token, long remainingSeconds) {
+        if (remainingSeconds > 0) {
+            stringRedisTemplate.opsForValue()
+                    .set(BLACKLIST_PREFIX + token, "logout", remainingSeconds);
+        }
+    }
+
     public boolean isBlacklisted(String token) {
         return Boolean.TRUE.equals(stringRedisTemplate.hasKey(BLACKLIST_PREFIX + token));
     }

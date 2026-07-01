@@ -67,4 +67,9 @@ public class JwtProvider {
     public Role getRole(String token) {
         return Role.valueOf(parseClaims(token).get("role", String.class));
     }
+
+    public long getRemainingSeconds(String token) {
+        long remain = parseClaims(token).getExpiration().getTime() - System.currentTimeMillis();
+        return Math.max(remain / 1000, 0);
+    }
 }

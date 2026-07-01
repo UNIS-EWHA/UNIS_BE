@@ -18,4 +18,14 @@ public class CookieUtil {
                 .maxAge(Duration.ofMillis(validityMs))
                 .build();
     }
+
+    public ResponseCookie expire() {
+        return ResponseCookie.from(REFRESH_TOKEN, "")
+                .httpOnly(true)
+                .secure(false) // TODO: HTTPS 세팅 후 변경
+                .sameSite("Lax")
+                .path("/api/v1/auth")
+                .maxAge(0)
+                .build();
+    }
 }
