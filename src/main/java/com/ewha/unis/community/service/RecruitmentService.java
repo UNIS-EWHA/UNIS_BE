@@ -45,7 +45,11 @@ public class RecruitmentService {
     public RecruitmentDetailResponse getRecruitmentDetail(Long recruitmentId, Long currentUserId) {
         Recruitment recruitment = getRecruitmentOrThrow(recruitmentId);
         recruitment.increaseViewCount();
-        return RecruitmentDetailResponse.of(recruitment, recruitment.isOwnedBy(currentUserId));
+
+        boolean isSaved = savedItemRepository
+                .findByUser_IdAndTargetTypeAndTargetId(currentUserId, SavedTargetType.RECRUITMENT, recruitmentId)
+                .isPresent();
+        return RecruitmentDetailResponse.of(recruitment, isSaved, recruitment.isOwnedBy(currentUserId));
     }
 
     @Transactional

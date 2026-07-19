@@ -20,9 +20,10 @@ public record RecruitmentDetailResponse(
         LocalDateTime createdAt,
         LocalDate deadline,
         Long dDay,
+        boolean isSaved,
         boolean isOwner
 ) {
-    public static RecruitmentDetailResponse of(Recruitment recruitment, boolean isOwner) {
+    public static RecruitmentDetailResponse of(Recruitment recruitment, boolean isSaved, boolean isOwner) {
         LocalDate deadline = recruitment.getDeadline();
         Long dDay = deadline == null ? null : ChronoUnit.DAYS.between(LocalDate.now(), deadline);
         return new RecruitmentDetailResponse(
@@ -35,6 +36,7 @@ public record RecruitmentDetailResponse(
                 recruitment.getCreatedAt(),
                 deadline,
                 dDay,
+                isSaved,
                 isOwner
         );
     }
