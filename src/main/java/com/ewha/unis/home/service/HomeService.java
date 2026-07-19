@@ -1,5 +1,7 @@
 package com.ewha.unis.home.service;
 
+import com.ewha.unis.admin.entity.RecruitSettings;
+import com.ewha.unis.admin.repository.RecruitSettingsRepository;
 import com.ewha.unis.home.dto.ArchiveResponse;
 import com.ewha.unis.home.dto.HomeStatsResponse;
 import com.ewha.unis.home.dto.TestimonialResponse;
@@ -24,9 +26,12 @@ public class HomeService {
     private final MemberRepository memberRepository;
     private final ArchiveRepository archiveRepository;
     private final TestimonialRepository testimonialRepository;
+    private final RecruitSettingsRepository recruitSettingsRepository;
 
     public HomeStatsResponse getStats() {
-        Integer generation = projectRepository.findMaxGeneration();
+        Integer generation = recruitSettingsRepository.findTopByOrderByIdDesc()
+                .map(RecruitSettings::getGeneration)
+                .orElseGet(projectRepository::findMaxGeneration);
         long projectCount = projectRepository.count();
         long memberCount = memberRepository.count();
         return new HomeStatsResponse(generation, projectCount, memberCount, PLACEHOLDER_AWARD_COUNT);
