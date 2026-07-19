@@ -59,6 +59,7 @@ public class AuthService {
         return LoginIdCheckResponse.of(available);
     }
 
+    @Transactional
     public LoginResult login(LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.loginId(), request.password()));
@@ -74,6 +75,8 @@ public class AuthService {
         String accessToken = jwtProvider.createAccessToken(memberId, role);
         String refreshToken = jwtProvider.createRefreshToken(memberId, refreshValidity);
         authRedisService.saveRefreshToken(memberId, refreshToken, refreshValidity);
+
+        memberRepository.findById(memberId).ifPresent(Member::updateLastLogin);
 
         return new LoginResult(accessToken, refreshToken, refreshValidity, role);
     }

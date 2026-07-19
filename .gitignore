@@ -40,3 +40,5 @@ application.yml
 application-local.yml
 application-prod.yml
 .DS_Store
+
+uploads/
