@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -56,7 +57,12 @@ public class SecurityConfig {
                         "api/v1/auth/email/",
                         "/swagger-ui/**",
                         "/v3/api-docs/**"
-                ).permitAll().anyRequest().authenticated())
+                ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/projects/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/home/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/about/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/activity/**").permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtProvider, authRedisService),
                         UsernamePasswordAuthenticationFilter.class)
