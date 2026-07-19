@@ -22,13 +22,13 @@ public class Member extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String loginId;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
     private Integer generation;
@@ -37,27 +37,56 @@ public class Member extends BaseTimeEntity {
     @Column(name = "part")
     private MemberPart part;
 
+    @Column(length = 150)
+    private String department;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_role", nullable = false)
+    private MemberRole memberRole;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     private LocalDateTime termsAgreedAt;
 
-    @Column(nullable = false)
     private LocalDateTime privacyAgreedAt;
 
     @Builder
     private Member(String name, String email, String loginId, String encodedPassword,
-                   Integer generation, MemberPart part) {
+                   Integer generation, MemberPart part, String department, MemberRole memberRole) {
         this.name = name;
         this.email = email;
         this.loginId = loginId;
         this.password = encodedPassword;
         this.generation = generation;
         this.part = part;
+        this.department = department;
         this.role = Role.USER;
-        this.termsAgreedAt = LocalDateTime.now();
-        this.privacyAgreedAt = LocalDateTime.now();
+        this.memberRole = memberRole != null ? memberRole : MemberRole.GENERAL;
+        if (loginId != null) {
+            this.termsAgreedAt = LocalDateTime.now();
+            this.privacyAgreedAt = LocalDateTime.now();
+        }
+    }
+
+    public void updateLastLogin() {
+        this.lastLoginAt = LocalDateTime.now();
+    }
+
+    public void updateRosterInfo(String name, String department, MemberPart part,
+                                  MemberRole memberRole, Integer generation) {
+        this.name = name;
+        this.department = department;
+        this.part = part;
+        this.memberRole = memberRole;
+        this.generation = generation;
+    }
+
+    public void promoteTo(Role role) {
+        this.role = role;
     }
 }
