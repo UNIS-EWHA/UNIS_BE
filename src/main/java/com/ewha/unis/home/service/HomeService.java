@@ -1,14 +1,22 @@
 package com.ewha.unis.home.service;
 
+import com.ewha.unis.admin.entity.PageContent;
+import com.ewha.unis.admin.entity.PageSection;
 import com.ewha.unis.admin.entity.RecruitSettings;
+import com.ewha.unis.admin.repository.PageContentRepository;
 import com.ewha.unis.admin.repository.RecruitSettingsRepository;
+import com.ewha.unis.global.exception.CustomException;
+import com.ewha.unis.global.response.code.ErrorCode;
 import com.ewha.unis.home.dto.ArchiveResponse;
+import com.ewha.unis.home.dto.HeroResponse;
 import com.ewha.unis.home.dto.HomeStatsResponse;
 import com.ewha.unis.home.dto.TestimonialResponse;
 import com.ewha.unis.home.repository.ArchiveRepository;
 import com.ewha.unis.home.repository.TestimonialRepository;
 import com.ewha.unis.member.repository.MemberRepository;
 import com.ewha.unis.project.repository.ProjectRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +35,8 @@ public class HomeService {
     private final ArchiveRepository archiveRepository;
     private final TestimonialRepository testimonialRepository;
     private final RecruitSettingsRepository recruitSettingsRepository;
+    private final PageContentRepository pageContentRepository;
+    private final ObjectMapper objectMapper;
 
     public HomeStatsResponse getStats() {
         Integer generation = recruitSettingsRepository.findTopByOrderByIdDesc()
@@ -47,5 +57,19 @@ public class HomeService {
         return testimonialRepository.findAllByOrderBySortOrderAsc().stream()
                 .map(TestimonialResponse::from)
                 .toList();
+    }
+
+    public HeroResponse getHero() {
+        PageContent pageContent = pageContentRepository.findBySection(PageSection.HERO)
+                .orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
+        return readContent(pageContent, HeroResponse.class);
+    }
+
+    private <T> T readContent(PageContent pageContent, Class<T> type) {
+        try {
+            return objectMapper.readValue(pageContent.getContentJson(), type);
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 }

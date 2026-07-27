@@ -2,6 +2,7 @@ package com.ewha.unis.home.controller;
 
 import com.ewha.unis.global.response.dto.BaseResponse;
 import com.ewha.unis.home.dto.ArchiveResponse;
+import com.ewha.unis.home.dto.HeroResponse;
 import com.ewha.unis.home.dto.HomeStatsResponse;
 import com.ewha.unis.home.dto.TestimonialResponse;
 import com.ewha.unis.home.service.HomeService;
@@ -17,6 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HomeController {
     private final HomeService homeService;
+
+    @GetMapping("/hero")
+    public BaseResponse<HeroResponse> getHero() {
+        return BaseResponse.ok(homeService.getHero());
+    }
 
     @GetMapping("/stats")
     public BaseResponse<HomeStatsResponse> getStats() {

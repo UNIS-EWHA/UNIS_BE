@@ -11,7 +11,9 @@ public record RecruitInfoResponse(
         RecruitStatus status,
         LocalDate startDate,
         LocalDate endDate,
-        LocalDateTime resultAnnounceAt
+        LocalDateTime resultAnnounceAt,
+        Integer capacity,
+        String schedule
 ) {
     public static RecruitInfoResponse from(RecruitSettings settings) {
         return new RecruitInfoResponse(
@@ -19,7 +21,9 @@ public record RecruitInfoResponse(
                 settings.getStatus(),
                 settings.getStartDate(),
                 settings.getEndDate(),
-                settings.getResultAnnounceAt()
+                settings.getResultAnnounceAt(),
+                settings.getCapacity(),
+                settings.getSchedule()
         );
     }
 }

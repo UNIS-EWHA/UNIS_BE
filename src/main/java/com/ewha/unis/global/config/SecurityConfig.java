@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,6 +60,8 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // TODO: H2 콘솔은 로컬 개발 편의를 위한 설정이므로 배포 전 반드시 제거할 것 (frameOptions 설정 포함)
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 "/health-check",
                                 "/api/v1/auth/signup",
@@ -66,7 +69,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/email/**",
                                 "/api/v1/auth/login-id/check",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/h2-console/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/projects/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/home/**").permitAll()
