@@ -13,8 +13,8 @@ public interface CommunityPostRepository extends JpaRepository<CommunityPost, Lo
     @Query("""
             SELECT p FROM CommunityPost p
             WHERE (:category IS NULL OR p.category = :category)
-            AND (:keyword IS NULL OR p.title LIKE CONCAT('%', :keyword, '%')
-                 OR p.content LIKE CONCAT('%', :keyword, '%'))
+            AND (CAST(:keyword AS text) IS NULL OR p.title LIKE CONCAT('%', CAST(:keyword AS text), '%')
+                 OR p.content LIKE CONCAT('%', CAST(:keyword AS text), '%'))
             ORDER BY p.createdAt DESC
             """)
     Page<CommunityPost> search(@Param("category") PostCategory category,

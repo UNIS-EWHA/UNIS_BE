@@ -14,8 +14,8 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Long> 
             SELECT DISTINCT r FROM Recruitment r
             LEFT JOIN r.parts rp
             WHERE (:part IS NULL OR rp.part = :part)
-            AND (:keyword IS NULL OR r.title LIKE CONCAT('%', :keyword, '%')
-                 OR r.content LIKE CONCAT('%', :keyword, '%'))
+            AND (CAST(:keyword AS text) IS NULL OR r.title LIKE CONCAT('%', CAST(:keyword AS text), '%')
+                 OR r.content LIKE CONCAT('%', CAST(:keyword AS text), '%'))
             ORDER BY r.createdAt DESC
             """)
     Page<Recruitment> search(@Param("part") MemberPart part,
