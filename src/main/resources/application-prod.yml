@@ -1,0 +1,60 @@
+# ============================================================
+# 배포 담당자 필수 확인 사항
+# 아래 환경변수를 배포 환경(서버/컨테이너)에 반드시 설정해야 합니다.
+#
+#   SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME,
+#   SPRING_DATASOURCE_PASSWORD             - PostgreSQL 접속 정보
+#     (예: SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/<db>)
+#   REDIS_HOST, REDIS_PASSWORD             - Redis 접속 정보 (REDIS_PORT는 기본값 6379, 다르면 지정)
+#   MAIL_HOST, MAIL_PORT,
+#   MAIL_USERNAME, MAIL_PASSWORD           - 메일 발송 계정 정보
+#   JWT_SECRET                             - 반드시 새로 발급한 값 사용 (로컬 application.yml 값 재사용 절대 금지)
+#   FRONTEND_URL                           - 실제 배포된 프론트 도메인 (예: https://unis-ewha.com)
+#   UPLOAD_DIR                             - 포트폴리오 파일 저장 경로 (S3 전환 전까지 영속 볼륨 마운트 필요)
+#   UPLOAD_BASE_URL                        - 위 경로에 저장된 파일에 접근할 base URL
+# ============================================================
+
+server:
+  # Render는 컨테이너에 PORT 환경변수로 리스닝 포트를 주입한다.
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+app:
+  upload:
+    # S3 전환 전까지는 이 경로에 EBS 볼륨 등 영속 스토리지를 마운트해야 함
+    # (마운트 없이 컨테이너/인스턴스 로컬 디스크에 저장 시 재배포·재시작마다 파일 유실됨)
+    dir: ${UPLOAD_DIR}
+    base-url: ${UPLOAD_BASE_URL}
+  cors:
+    # 실제 배포 프론트 도메인으로 지정 (예: https://unis-ewha.com)
+    allowed-origins: ${FRONTEND_URL}
+
+jwt:
+  # 로컬 application.yml의 secret 값을 그대로 쓰지 말 것 — 배포용으로 새로 발급한 값을 사용해야 함
+  secret: ${JWT_SECRET}
+  access-token-validity: 1800000
+  refresh-token-validity: 1209600000
+  refresh-token-validity-short: 3600000
