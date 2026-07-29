@@ -13,8 +13,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             SELECT DISTINCT p FROM Project p
             LEFT JOIN p.techStacks t
             WHERE (:generation IS NULL OR p.generation = :generation)
-            AND (:keyword IS NULL OR p.name LIKE CONCAT('%', :keyword, '%')
-                 OR t.techName LIKE CONCAT('%', :keyword, '%'))
+            AND (CAST(:keyword AS text) IS NULL OR p.name LIKE CONCAT('%', CAST(:keyword AS text), '%')
+                 OR t.techName LIKE CONCAT('%', CAST(:keyword AS text), '%'))
             ORDER BY p.createdAt DESC
             """)
     Page<Project> search(@Param("generation") Integer generation,
