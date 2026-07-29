@@ -1,11 +1,13 @@
 package com.ewha.unis.auth.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthRedisService {
@@ -14,8 +16,9 @@ public class AuthRedisService {
     private static final String BLACKLIST_PREFIX = "blacklist:";
 
     public void saveRefreshToken(Long memberId, String token, long validityMs) {
+        log.info("refresh token TTL = {}", validityMs);
         stringRedisTemplate.opsForValue()
-                .set(REFRESH_PREFIX + memberId, token, validityMs, TimeUnit.MILLISECONDS);
+                .set(REFRESH_PREFIX + memberId, token, validityMs / 1000, TimeUnit.SECONDS);
     }
 
     public boolean isValidRefreshToken(Long memberId, String token) {
