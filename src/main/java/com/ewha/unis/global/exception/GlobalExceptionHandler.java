@@ -27,6 +27,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCustomException(
             CustomException e, HttpServletRequest request) {
         BaseCode errorCode = e.getBaseCode();
+        log.error("CustomException 발생 - URI: {}, code: {}", request.getRequestURI(), errorCode.name(), e);
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ErrorResponse.of(errorCode, request.getRequestURI()));
