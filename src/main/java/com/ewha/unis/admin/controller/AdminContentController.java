@@ -6,6 +6,8 @@ import com.ewha.unis.admin.dto.AboutIntroEditRequest;
 import com.ewha.unis.admin.dto.CoreValuesEditRequest;
 import com.ewha.unis.admin.dto.ExperienceEditRequest;
 import com.ewha.unis.admin.dto.HeroEditRequest;
+import com.ewha.unis.admin.dto.PartsEditRequest;
+import com.ewha.unis.admin.dto.PhotosEditRequest;
 import com.ewha.unis.admin.service.PageContentService;
 import com.ewha.unis.global.response.dto.BaseResponse;
 import jakarta.validation.Valid;
@@ -43,6 +45,18 @@ public class AdminContentController {
     @PutMapping("/about/values")
     public BaseResponse<Void> updateCoreValues(@Valid @RequestBody CoreValuesEditRequest request) {
         pageContentService.updateCoreValues(request);
+        return BaseResponse.ok();
+    }
+
+    @PutMapping("/about/parts")
+    public BaseResponse<Void> updateParts(@Valid @RequestBody PartsEditRequest request) {
+        pageContentService.updateParts(request);
+        return BaseResponse.ok();
+    }
+
+    @PutMapping("/about/photos")
+    public BaseResponse<Void> updatePhotos(@Valid @RequestBody PhotosEditRequest request) {
+        pageContentService.updatePhotos(request);
         return BaseResponse.ok();
     }
 
