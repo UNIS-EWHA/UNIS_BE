@@ -1,6 +1,7 @@
 package com.ewha.unis.application.service;
 
 import com.ewha.unis.admin.entity.RecruitSettings;
+import com.ewha.unis.admin.entity.RecruitStatus;
 import com.ewha.unis.admin.repository.RecruitSettingsRepository;
 import com.ewha.unis.application.dto.ApplicationCreateRequest;
 import com.ewha.unis.application.dto.ApplicationCreateResponse;
@@ -40,6 +41,10 @@ public class ApplicationService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.RESOURCE_NOT_FOUND));
         RecruitSettings settings = getCurrentRecruitSettings();
+
+        if (settings.getStatus() != RecruitStatus.OPEN) {
+            throw new CustomException(ErrorCode.RECRUITMENT_NOT_OPEN);
+        }
 
         if (applicationRepository.existsByStudentIdAndGeneration(request.studentId(), settings.getGeneration())) {
             throw new CustomException(ErrorCode.DUPLICATE_APPLICATION);
