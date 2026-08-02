@@ -2,7 +2,6 @@ package com.ewha.unis.home.service;
 
 import com.ewha.unis.admin.entity.PageContent;
 import com.ewha.unis.admin.entity.PageSection;
-import com.ewha.unis.admin.entity.RecruitSettings;
 import com.ewha.unis.admin.repository.PageContentRepository;
 import com.ewha.unis.admin.repository.RecruitSettingsRepository;
 import com.ewha.unis.global.exception.CustomException;
@@ -40,7 +39,7 @@ public class HomeService {
 
     public HomeStatsResponse getStats() {
         Integer generation = recruitSettingsRepository.findTopByOrderByIdDesc()
-                .map(RecruitSettings::getGeneration)
+                .map(s -> s.getGeneration() - 1)
                 .orElseGet(projectRepository::findMaxGeneration);
         long projectCount = projectRepository.count();
         long memberCount = memberRepository.count();
